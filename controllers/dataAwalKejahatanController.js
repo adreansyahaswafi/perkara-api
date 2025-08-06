@@ -93,7 +93,7 @@ exports.createDataAwalKejahatan = async (req, res) => {
       data: laporan,
     });
   } catch (error) {
-    console.error('❌ Gagal membuat data awal kejahatan:', error);
+    // console.error('❌ Gagal membuat data awal kejahatan:', error);
     res.status(500).json({ error: error.message });
   }
 };

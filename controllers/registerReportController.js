@@ -109,7 +109,7 @@ exports.createLaporan = async (req, res) => {
       data: laporan,
     });
   } catch (error) {
-    console.error('❌ Gagal membuat laporan:', error);
+    // console.error('❌ Gagal membuat laporan:', error);
     res.status(500).json({ error: error.message });
   }
 };

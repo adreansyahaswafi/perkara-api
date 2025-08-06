@@ -17,6 +17,8 @@ exports.getLaporanList = async (req, res) => {
             'barang_bukti',
             'tersangka',
             'perkembangan',
+            'pic',
+            'tanggal_update',
             'keterangan',
             'status'
         ];
@@ -112,6 +114,8 @@ exports.createLaporan = async (req, res) => {
             barang_bukti,
             tersangka,
             perkembangan,
+            pic,
+            tanggal_update,
             keterangan,
             status,
             umur_pelapor,
@@ -140,6 +144,8 @@ exports.createLaporan = async (req, res) => {
             barang_bukti,
             tersangka,
             perkembangan,
+            pic,
+            tanggal_update,
             keterangan,
             status,
             umur_pelapor,
@@ -152,7 +158,7 @@ exports.createLaporan = async (req, res) => {
             data: laporan,
         });
     } catch (err) {
-        console.error('❌ Create laporan failed:', err);
+        // console.error('❌ Create laporan failed:', err);
         res.status(500).json({ error: err.message });
     }
 };

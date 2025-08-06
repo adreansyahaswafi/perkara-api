@@ -12,6 +12,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const dataAwalKejahatanRoutes = require('./routes/dataAwalKejahatanRoutes');
 const tahananRoutes = require('./routes/tahananRoutes');
+const pustakaRoutes = require('./routes/pustakaRoutes');
 
 connectDB();
 
@@ -32,6 +33,7 @@ app.use('/api/reports', laporanRoutes);
 app.use('/api/register-reports', registerLaporanRoutes);
 app.use('/api/kejahatan', dataAwalKejahatanRoutes);
 app.use('/api/tahanan', tahananRoutes);
+app.use('/api/pustaka', pustakaRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

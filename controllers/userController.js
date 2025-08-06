@@ -67,7 +67,7 @@ exports.getUserDetail = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, password, jabatan, phone, terdaftar } = req.body;
+    const { name, email, password, jabatan, phone, terdaftar, level } = req.body;
 
     try {
         const updatePayload = {
@@ -75,12 +75,14 @@ exports.updateUser = async (req, res) => {
             email,
             jabatan,
             phone,
+            level,
             terdaftar,
         };
 
         // 🔐 Hash password jika diisi
         if (password) {
-            updatePayload.password = password;
+            const salt = await bcrypt.genSalt(10);
+            updatePayload.password = await bcrypt.hash(password, salt);
         }
 
         // 🖼️ Jika ada file image diupload
@@ -91,7 +93,7 @@ exports.updateUser = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(id, updatePayload, {
             new: true,
             runValidators: true,
-        }).select('-password');
+        }).select('-password'); // jangan kirim password ke client
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -102,7 +104,6 @@ exports.updateUser = async (req, res) => {
             user: updatedUser,
         });
     } catch (error) {
-        console.error("Update failed:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
@@ -110,7 +111,7 @@ exports.updateUser = async (req, res) => {
 
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, jabatan, phone, createdDate } = req.body;
+        const { name, email, password, jabatan, phone, createdDate, level } = req.body;
 
         const exist = await User.findOne({ email });
         if (exist) return res.status(400).json({ error: 'Email already used' });
@@ -123,6 +124,7 @@ exports.register = async (req, res) => {
             password,
             jabatan,
             phone,
+            level,
             createdDate,
             images: imageFile,
             access_token: '',
@@ -180,15 +182,13 @@ exports.deleteUserById = async (req, res) => {
 
         res.status(200).json({ message: 'User deleted successfully', user });
     } catch (error) {
-        console.error('Delete failed:', error);
+        // console.error('Delete failed:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
 exports.getMyProfile = async (req, res) => {
     try {
-        // req.user was set in protect middleware
-        console.log(req)
         res.json({
             data: req.user
         });

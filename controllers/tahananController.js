@@ -118,7 +118,7 @@ exports.createTahanan = async (req, res) => {
             data: newTahanan,
         });
     } catch (error) {
-        console.error('❌ Gagal membuat data tahanan:', error);
+        // console.error('❌ Gagal membuat data tahanan:', error);
         res.status(500).json({ error: error.message });
     }
 };

@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     images: { type: String, required: false },
     password: { type: String, required: true },
     jabatan: { type: String, required: true },
+    level: { type: String, required: true },
     phone: { type: String, required: true },
     createdDate: { type: String, required: true },
     access_token: { type: String, required: false }

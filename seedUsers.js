@@ -1,71 +1,64 @@
 const mongoose = require('mongoose');
-const Tahanan = require('./models/tahananModel'); // Ganti path jika berbeda
+const LaporanPolisi = require('./models/reportModel'); // Ganti path kalau beda
 
-mongoose.connect('mongodb://127.0.0.1:27017/perkara', {
+mongoose.connect('mongodb://127.0.0.1:27018/perkara', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-const dummyNames = [
-  "Andi", "Budi", "Santi", "Joko", "Nia", "Rudi", "Tini", "Eko", "Lina",
-  "Agus", "Rani", "Udin", "Dina", "Farhan", "Siska", "Taufik", "Dewi", "Irfan", "Nina"
-];
-
-const alamatList = [
-  "Jl. Merdeka No.10", "Jl. Sudirman No.25", "Jl. Gajah Mada No.12",
-  "Jl. Diponegoro No.7", "Jl. Thamrin No.5", "Jl. Asia Afrika No.88"
-];
-
-const pasalList = [
-  "Pasal 362 KUHP", "Pasal 351 KUHP", "Pasal 378 KUHP", "Pasal 340 KUHP"
-];
-
-const jenisKelaminList = ["laki-laki", "perempuan"];
+const dummyNames = ["Andi", "Budi", "Santi", "Joko", "Nia", "Rudi", "Tini", "Eko", "Lina"];
+const lokasiList = ["Jl. Merdeka", "Jl. Sudirman", "Jl. Gajah Mada"];
+const pasalList = ["Pasal 362 KUHP", "Pasal 351 KUHP", "Pasal 378 KUHP"];
+const statusList = ["proses", "selesai", "sidang"];
+const petugasList = ["Briptu Ardi", "Aiptu Dedi", "Iptu Rika"];
 
 const randomDateStr = (daysAgo = 0) =>
-  new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+  new Date(Date.now() - daysAgo * 86400000).toISOString();
 
-const seedTahanan = async () => {
+const seedLaporan = async () => {
   try {
-    const data = Array.from({ length: 50 }).map((_, index) => {
-      const nama = `${dummyNames[index % dummyNames.length]} ${index}`;
-      const umur = (18 + (index % 40)).toString();
-      const jk = jenisKelaminList[index % 2];
-      const alamat = alamatList[index % alamatList.length];
-      const pasal = pasalList[index % pasalList.length];
-      const tanggalMasuk = randomDateStr(index + 1);
-      const tanggalKeluar = randomDateStr(index);
+    const data = Array.from({ length: 30 }).map((_, i) => {
+      const nama = dummyNames[i % dummyNames.length];
+      const umur = (18 + (i % 40)).toString();
+      const pasal = pasalList[i % pasalList.length];
+      const status = statusList[i % statusList.length];
+      const lokasi = lokasiList[i % lokasiList.length];
+      const tanggalKejadian = randomDateStr(i + 3);
+      const tanggalLaporan = randomDateStr(i + 1);
+      const petugas = petugasList[i % petugasList.length];
 
       return {
-        nama_tahanan: nama,
-        umur,
-        jenis_kelamin: jk,
-        perkara_pasal: pasal,
-        alamat,
-        no_laporan_polisi: `LP/2025/000${index + 1}`,
-        no_surat_penahanan: `NSP-${index + 1}`,
-        no_surat_permintaan_perpanjang_tahanan: `PMPT-${index + 100}`,
-        no_surat_perintah_perpanjang_tahanan: `PPT-${index + 200}`,
-        no_surat_perintah_penangguhan_tahanan: `PTT-${index + 300}`,
-        no_surat_perintah_pengalihan_tahanan: `PGA-${index + 400}`,
-        no_surat_perintah_pengeluaran_tahanan: `PKT-${index + 500}`,
-        pasal_pidana: pasal,
-        tanggal_masuk: tanggalMasuk,
-        tanggal_keluar: tanggalKeluar,
-        keterangan: "Tahanan belum disidangkan"
+        no_laporan: `LP/2025/00${i + 1}`,
+        pelapor: nama,
+        terlapor: `Terlapor ${i}`,
+        lokasi,
+        tanggal_kejadian: tanggalKejadian,
+        tanggal_laporan: tanggalLaporan,
+        pasal,
+        barang_bukti: `Barang bukti ${i}`,
+        tersangka: `Tersangka ${i}`,
+        perkembangan: `Tahap ${i % 3} - Catatan perkembangan laporan ke-${i}`,
+        pic: `Nama: ${petugas}, Pangkat: Briptu`,
+        tanggal_update: new Date().toISOString(),
+        keterangan: `Keterangan untuk laporan ke-${i}`,
+        status,
+        umur_pelapor: umur,
+        singkat_kejadian: `Pelapor ${nama} mengalami kejadian pada ${lokasi}.`,
+        alamat_pelapor: `${lokasi} No.${i + 10}`,
+        petugas_penerima: petugas
       };
     });
 
-    await Tahanan.deleteMany(); // Optional: clear data before seeding
-    await Tahanan.insertMany(data);
-    console.log('✅ 50 data tahanan inserted!');
+    await LaporanPolisi.deleteMany();
+    await LaporanPolisi.insertMany(data);
+    console.log('✅ 30 data laporan polisi berhasil dimasukkan!');
     mongoose.disconnect();
   } catch (err) {
-    console.error('❌ Error inserting tahanan:', err);
+    console.error('❌ Gagal seeding:', err);
     mongoose.disconnect();
   }
 };
 
-seedTahanan();
+seedLaporan();
