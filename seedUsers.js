@@ -1,21 +1,23 @@
 const mongoose = require('mongoose');
-const LaporanPolisi = require('./models/reportModel'); // Ganti path kalau beda
+const dayjs = require('dayjs');
+const LaporanPolisi = require('./models/reportModel');
 
-mongoose.connect('mongodb://127.0.0.1:27018/perkara', {
+mongoose.connect('mongodb://root:root@ac-jjfnmw4-shard-00-00.88lz053.mongodb.net:27017,ac-jjfnmw4-shard-00-01.88lz053.mongodb.net:27017,ac-jjfnmw4-shard-00-02.88lz053.mongodb.net:27017/perkara?ssl=true&authSource=admin&retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
+// Helper to get formatted string date
+const formatDate = (daysAgo = 0) =>
+  dayjs().subtract(daysAgo, 'day').format('YYYY-MM-DD HH:mm');
+
 const dummyNames = ["Andi", "Budi", "Santi", "Joko", "Nia", "Rudi", "Tini", "Eko", "Lina"];
 const lokasiList = ["Jl. Merdeka", "Jl. Sudirman", "Jl. Gajah Mada"];
 const pasalList = ["Pasal 362 KUHP", "Pasal 351 KUHP", "Pasal 378 KUHP"];
 const statusList = ["proses", "selesai", "sidang"];
 const petugasList = ["Briptu Ardi", "Aiptu Dedi", "Iptu Rika"];
-
-const randomDateStr = (daysAgo = 0) =>
-  new Date(Date.now() - daysAgo * 86400000).toISOString();
 
 const seedLaporan = async () => {
   try {
@@ -25,8 +27,8 @@ const seedLaporan = async () => {
       const pasal = pasalList[i % pasalList.length];
       const status = statusList[i % statusList.length];
       const lokasi = lokasiList[i % lokasiList.length];
-      const tanggalKejadian = randomDateStr(i + 3);
-      const tanggalLaporan = randomDateStr(i + 1);
+      const tanggalKejadian = formatDate(i + 3);
+      const tanggalLaporan = formatDate(i + 1);
       const petugas = petugasList[i % petugasList.length];
 
       return {
@@ -41,12 +43,12 @@ const seedLaporan = async () => {
         tersangka: `Tersangka ${i}`,
         perkembangan: [
           {
-            tanggal_update: randomDateStr(i + 1),
+            tanggal_update: formatDate(i + 1),
             pic: petugas,
             keterangan: `Perkembangan awal laporan ke-${i}`,
           },
           {
-            tanggal_update: randomDateStr(i),
+            tanggal_update: formatDate(i),
             pic: petugasList[(i + 1) % petugasList.length],
             keterangan: `Tindak lanjut laporan ke-${i}`,
           }

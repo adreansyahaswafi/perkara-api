@@ -7,18 +7,15 @@ const adjustToWIB = (dateStr) => {
     return date;
 };
 
-// GET: List laporan dengan pagination, search & filter tanggal
+// GET: List laporan (dengan pencarian & filter tanggal string)
 exports.getLaporanList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const size = parseInt(req.query.limit) || 10;
+        const size = parseInt(req.query.perPage || req.query.limit) || 10;
         const search = req.query.keyword || '';
         const skip = (page - 1) * size;
 
-        const {
-            tanggal_laporan,
-            tanggal_kejadian,
-        } = req.query;
+        const { tanggal_laporan, tanggal_kejadian } = req.query;
 
         const searchFields = [
             'no_laporan',
@@ -28,7 +25,7 @@ exports.getLaporanList = async (req, res) => {
             'pasal',
             'barang_bukti',
             'tersangka',
-            'perkembangan',
+            'perkembangan.keterangan',
             'pic',
             'tanggal_update',
             'keterangan',
@@ -37,23 +34,20 @@ exports.getLaporanList = async (req, res) => {
 
         const searchQuery = {};
 
-        // keyword search
+        // Keyword search
         if (search) {
             searchQuery.$or = searchFields.map((field) => ({
                 [field]: { $regex: search, $options: 'i' },
             }));
         }
 
-        // filter tanggal_laporan >= tanggal_laporan (+7 jam)
+        // Tanggal filter pakai string prefix (regex)
         if (tanggal_laporan) {
-            const tglLaporan = adjustToWIB(tanggal_laporan);
-            searchQuery.tanggal_laporan = { $gte: tglLaporan };
+            searchQuery.tanggal_laporan = { $regex: `^${tanggal_laporan}`, $options: 'i' };
         }
 
-        // filter tanggal_kejadian >= tanggal_kejadian (+7 jam)
         if (tanggal_kejadian) {
-            const tglKejadian = adjustToWIB(tanggal_kejadian);
-            searchQuery.tanggal_kejadian = { $gte: tglKejadian };
+            searchQuery.tanggal_kejadian = { $regex: `^${tanggal_kejadian}`, $options: 'i' };
         }
 
         const [laporanList, totalElements] = await Promise.all([
