@@ -39,10 +39,18 @@ const seedLaporan = async () => {
         pasal,
         barang_bukti: `Barang bukti ${i}`,
         tersangka: `Tersangka ${i}`,
-        perkembangan: `Tahap ${i % 3} - Catatan perkembangan laporan ke-${i}`,
-        pic: `Nama: ${petugas}, Pangkat: Briptu`,
-        tanggal_update: new Date().toISOString(),
-        keterangan: `Keterangan untuk laporan ke-${i}`,
+        perkembangan: [
+          {
+            tanggal_update: randomDateStr(i + 1),
+            pic: petugas,
+            keterangan: `Perkembangan awal laporan ke-${i}`,
+          },
+          {
+            tanggal_update: randomDateStr(i),
+            pic: petugasList[(i + 1) % petugasList.length],
+            keterangan: `Tindak lanjut laporan ke-${i}`,
+          }
+        ],
         status,
         umur_pelapor: umur,
         singkat_kejadian: `Pelapor ${nama} mengalami kejadian pada ${lokasi}.`,

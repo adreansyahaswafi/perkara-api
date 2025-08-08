@@ -1,12 +1,24 @@
 const Report = require('../models/reportModel');
 
-// GET: List laporan dengan pagination dan search
+// 🔧 Fungsi bantu: Tambah 7 jam
+const adjustToWIB = (dateStr) => {
+    const date = new Date(dateStr);
+    date.setHours(date.getHours() + 7);
+    return date;
+};
+
+// GET: List laporan dengan pagination, search & filter tanggal
 exports.getLaporanList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const size = parseInt(req.query.limit) || 10;
         const search = req.query.keyword || '';
         const skip = (page - 1) * size;
+
+        const {
+            tanggal_laporan,
+            tanggal_kejadian,
+        } = req.query;
 
         const searchFields = [
             'no_laporan',
@@ -23,13 +35,26 @@ exports.getLaporanList = async (req, res) => {
             'status'
         ];
 
-        const searchQuery = search
-            ? {
-                $or: searchFields.map((field) => ({
-                    [field]: { $regex: search, $options: 'i' },
-                })),
-            }
-            : {};
+        const searchQuery = {};
+
+        // keyword search
+        if (search) {
+            searchQuery.$or = searchFields.map((field) => ({
+                [field]: { $regex: search, $options: 'i' },
+            }));
+        }
+
+        // filter tanggal_laporan >= tanggal_laporan (+7 jam)
+        if (tanggal_laporan) {
+            const tglLaporan = adjustToWIB(tanggal_laporan);
+            searchQuery.tanggal_laporan = { $gte: tglLaporan };
+        }
+
+        // filter tanggal_kejadian >= tanggal_kejadian (+7 jam)
+        if (tanggal_kejadian) {
+            const tglKejadian = adjustToWIB(tanggal_kejadian);
+            searchQuery.tanggal_kejadian = { $gte: tglKejadian };
+        }
 
         const [laporanList, totalElements] = await Promise.all([
             Report.find(searchQuery).skip(skip).limit(size),
@@ -82,6 +107,17 @@ exports.updateLaporan = async (req, res) => {
             updatePayload.images = req.file.filename;
         }
 
+        // Penyesuaian tanggal jika ada
+        if (updatePayload.tanggal_laporan) {
+            updatePayload.tanggal_laporan = adjustToWIB(updatePayload.tanggal_laporan);
+        }
+        if (updatePayload.tanggal_kejadian) {
+            updatePayload.tanggal_kejadian = adjustToWIB(updatePayload.tanggal_kejadian);
+        }
+        if (updatePayload.tanggal_update) {
+            updatePayload.tanggal_update = adjustToWIB(updatePayload.tanggal_update);
+        }
+
         const updated = await Report.findByIdAndUpdate(id, updatePayload, {
             new: true,
             runValidators: true,
@@ -123,29 +159,29 @@ exports.createLaporan = async (req, res) => {
             alamat_pelapor,
         } = req.body;
 
-        // 🚫 Validasi wajib
+        // Validasi wajib
         if (!no_laporan || !pelapor || !tanggal_laporan || !tanggal_kejadian) {
             return res.status(400).json({ message: 'Beberapa field wajib belum diisi.' });
         }
 
-        // 🔍 Cek duplikasi nomor laporan
+        // Cek duplikasi nomor laporan
         const exist = await Report.findOne({ no_laporan });
         if (exist) return res.status(400).json({ error: 'Nomor laporan sudah digunakan.' });
 
-        // ✅ Buat laporan
+        // Buat laporan dengan penyesuaian waktu
         const laporan = await Report.create({
             no_laporan,
             pelapor,
             lokasi,
-            tanggal_kejadian,
-            tanggal_laporan,
+            tanggal_kejadian: adjustToWIB(tanggal_kejadian),
+            tanggal_laporan: adjustToWIB(tanggal_laporan),
             petugas_penerima,
             pasal,
             barang_bukti,
             tersangka,
             perkembangan,
             pic,
-            tanggal_update,
+            tanggal_update: tanggal_update ? adjustToWIB(tanggal_update) : undefined,
             keterangan,
             status,
             umur_pelapor,
@@ -158,7 +194,6 @@ exports.createLaporan = async (req, res) => {
             data: laporan,
         });
     } catch (err) {
-        // console.error('❌ Create laporan failed:', err);
         res.status(500).json({ error: err.message });
     }
 };
