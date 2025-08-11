@@ -17,6 +17,7 @@ const reportSchema = new mongoose.Schema({
     pasal: { type: String, required: true },
     barang_bukti: { type: String, required: true },
     tersangka: { type: String, required: true },
+    saksi: { type: String, required: false },
     perkembangan: { type: Array, required: true },
     keterangan: { type: String, required: true },
     status: { type: String, required: true },
